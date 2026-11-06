@@ -1,0 +1,10 @@
+{
+  "format":"tps.document","schemaVersion":"0.1.0-draft","units":"um",
+  "title":"시험 양식","locale":"ko-KR","timeZone":"Asia/Seoul",
+  "requiredFeatures":[{"id":"tps.text","version":"1"}],
+  "sections":[{"id":"section1","page":{"width":210000,"height":297000,"margins":{"top":10000,"right":10000,"bottom":10000,"left":10000}},
+    "bands":[{"id":"detail1","kind":"detail","height":277000,"properties":{},"elements":[
+      {"id":"title1","type":"tps.text","typeVersion":"1","frame":{"x":10000,"y":10000,"width":130000,"height":16000},"properties":{"text":"TPS 시험 문구","fontSizePt":"20","color":"#17324d","futureStyle":{"preserve":"yes"}},"bindings":[],"children":[]}
+    ],"childBands":[]}]}],
+  "datasets":[],"assets":[],"provenance":{"origin":"native","elementOrigins":[]},"extensions":{}
+}

@@ -1,0 +1,34 @@
+server:
+  address: 127.0.0.1
+  port: ${TPS_PORT:18080}
+  error:
+    include-message: never
+    include-stacktrace: never
+spring:
+  application:
+    name: tps
+  datasource:
+    url: jdbc:sqlserver://${TPS_DB_HOST:127.0.0.1}:${TPS_DB_PORT:1433};databaseName=${TPS_DB_NAME:TPS};encrypt=true;trustServerCertificate=${TPS_DB_TRUST_SERVER_CERTIFICATE:false};loginTimeout=8;applicationName=TPS
+    username: ${TPS_DB_USER:}
+    password: ${TPS_DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: 5
+      connection-timeout: 10000
+      initialization-fail-timeout: 10000
+  sql:
+    init:
+      mode: never
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    default-statement-timeout: 15
+tps:
+  site-id: ${TPS_SITE_ID:TPS_DEV}
+  enabled-modules: ${TPS_ENABLED_MODULES:RPS,LPS}
+  dev-password: ${TPS_DEV_PASSWORD:}
+logging:
+  level:
+    com.thira.tps: INFO
+    org.springframework.jdbc: WARN
+    org.mybatis: WARN

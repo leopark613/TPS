@@ -1,0 +1,11 @@
+{
+  "description": "Synthetic only; not query output from MES_LITE. Font/asset references in document examples are placeholders and not render-ready.",
+  "rows": [
+    {
+      "serial": "000012"
+    },
+    {
+      "serial": "한글-000013"
+    }
+  ]
+}

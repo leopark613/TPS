@@ -1,0 +1,46 @@
+plugins {
+    id 'java'
+    id 'eclipse'
+    id 'org.springframework.boot'
+    id 'maven-publish'
+}
+group = 'com.thira.tps'
+version = '0.1.0-SNAPSHOT'
+java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
+repositories { mavenCentral() }
+dependencies {
+    implementation enforcedPlatform('org.springframework.boot:spring-boot-dependencies:4.1.2')
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:4.1.0'
+    runtimeOnly 'com.microsoft.sqlserver:mssql-jdbc'
+    compileOnly 'org.projectlombok:lombok:1.18.48'
+    annotationProcessor 'org.projectlombok:lombok:1.18.48'
+    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+    implementation 'org.mapstruct:mapstruct:1.6.3'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
+    implementation 'com.networknt:json-schema-validator:3.0.9'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8'; options.compilerArgs.add('-parameters') }
+tasks.named('test') { useJUnitPlatform() }
+tasks.named('processResources') { from('../frontend/dist') { into 'static' } }
+tasks.named('jar') { enabled = false }
+tasks.named('bootJar') { archiveFileName = 'tps-server.jar' }
+eclipse { project { name = 'tps-server' } }
+publishing {
+    publications { tps(MavenPublication) { artifactId = 'tps-server'; artifact tasks.named('bootJar') } }
+    repositories {
+        if (System.getenv('TPS_NEXUS_REPOSITORY_URL')) {
+            maven {
+                name = 'tpsNexus'
+                url = uri(System.getenv('TPS_NEXUS_REPOSITORY_URL'))
+                credentials {
+                    username = System.getenv('TPS_NEXUS_USER')
+                    password = System.getenv('TPS_NEXUS_PASSWORD')
+                }
+            }
+        }
+    }
+}

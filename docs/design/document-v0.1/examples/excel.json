@@ -1,0 +1,158 @@
+{
+  "format": "tps.document",
+  "schemaVersion": "0.1.0-draft",
+  "units": "um",
+  "title": "TPS Excel 유래 합성 양식",
+  "locale": "ko-KR",
+  "timeZone": "Asia/Seoul",
+  "requiredFeatures": [
+    {
+      "id": "tps.text",
+      "version": "1"
+    },
+    {
+      "id": "tps.qr",
+      "version": "1"
+    }
+  ],
+  "sections": [
+    {
+      "id": "section-main",
+      "page": {
+        "width": 210000,
+        "height": 297000,
+        "margins": {
+          "top": 10000,
+          "right": 10000,
+          "bottom": 10000,
+          "left": 10000
+        }
+      },
+      "bands": [
+        {
+          "id": "band-detail",
+          "kind": "detail",
+          "height": 30000,
+          "datasetId": "ds-main",
+          "properties": {
+            "keepTogether": true
+          },
+          "elements": [
+            {
+              "id": "text-serial",
+              "type": "tps.text",
+              "typeVersion": "1",
+              "frame": {
+                "x": 0,
+                "y": 0,
+                "width": 25000,
+                "height": 25000
+              },
+              "properties": {
+                "fontFamilyRef": "font-cjk-test",
+                "fontSizePt": "10.0"
+              },
+              "bindings": [
+                {
+                  "property": "text",
+                  "source": {
+                    "kind": "field",
+                    "datasetId": "ds-main",
+                    "fieldId": "serial"
+                  },
+                  "evaluation": {
+                    "scope": "row",
+                    "event": "beforePrint"
+                  },
+                  "nullPolicy": "error"
+                }
+              ],
+              "children": []
+            },
+            {
+              "id": "qr-serial",
+              "type": "tps.qr",
+              "typeVersion": "1",
+              "frame": {
+                "x": 30000,
+                "y": 0,
+                "width": 25000,
+                "height": 25000
+              },
+              "properties": {
+                "symbology": "QR",
+                "encoding": "UTF-8",
+                "errorCorrection": "M",
+                "quietZoneModules": 4,
+                "versionMode": "auto",
+                "defaultsContract": "tps.qr:1"
+              },
+              "bindings": [
+                {
+                  "property": "payload",
+                  "source": {
+                    "kind": "field",
+                    "datasetId": "ds-main",
+                    "fieldId": "serial"
+                  },
+                  "evaluation": {
+                    "scope": "row",
+                    "event": "beforePrint"
+                  },
+                  "nullPolicy": "error"
+                }
+              ],
+              "children": []
+            }
+          ],
+          "childBands": []
+        }
+      ]
+    }
+  ],
+  "datasets": [
+    {
+      "id": "ds-main",
+      "queryRef": {
+        "id": "SYNTHETIC_QUERY",
+        "classId": "FIXTURE",
+        "version": "1"
+      },
+      "ordinal": 0,
+      "fields": [
+        {
+          "id": "serial",
+          "path": [
+            "serial"
+          ],
+          "type": "string"
+        }
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "id": "font-cjk-test",
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "mediaType": "font/ttf",
+      "byteLength": 1,
+      "objectRef": "fixture:not-a-real-font"
+    }
+  ],
+  "provenance": {
+    "origin": "excel",
+    "sourceSha256": "2222222222222222222222222222222222222222222222222222222222222222",
+    "importRecordRef": "fixture:import-001",
+    "elementOrigins": [
+      {
+        "elementId": "text-serial",
+        "locator": "Sheet1!A1"
+      },
+      {
+        "elementId": "qr-serial",
+        "locator": "manual-after-import"
+      }
+    ]
+  },
+  "extensions": {}
+}

@@ -1,0 +1,2 @@
+// One product. Maven remains the primary build; this builds the same server sources.
+plugins { id 'org.springframework.boot' version '4.1.2' apply false }

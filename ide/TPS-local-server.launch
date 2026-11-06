@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
+  <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="server"/>
+  <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="com.thira.tps.TpsApplication"/>
+  <stringAttribute key="org.eclipse.jdt.launching.JRE_CONTAINER" value="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-21"/>
+  <stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:server}"/>
+  <booleanAttribute key="org.eclipse.jdt.launching.STOP_IN_MAIN" value="false"/>
+  <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="false"/>
+  <booleanAttribute key="org.eclipse.debug.core.appendEnvironmentVariables" value="true"/>
+  <mapAttribute key="org.eclipse.debug.core.environmentVariables">
+    <mapEntry key="SPRING_PROFILES_ACTIVE" value="local"/>
+  </mapAttribute>
+  <listAttribute key="org.eclipse.debug.ui.favoriteGroups">
+    <listEntry value="org.eclipse.debug.ui.launchGroup.run"/>
+    <listEntry value="org.eclipse.debug.ui.launchGroup.debug"/>
+  </listAttribute>
+</launchConfiguration>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thira.tps.document.DocumentPersistence">
+  <sql id="receiptWhere">SITE_ID=#{scope.siteId} AND ACTOR_ID=#{scope.actorId} AND OPERATION=#{scope.operation} AND SCOPE_KIND=#{scope.scopeKind} AND SCOPE_ID=#{scope.scopeId,jdbcType=VARCHAR} AND REQUEST_KEY=#{scope.requestKey}</sql>
+  <!-- Exact UQ range lock serializes duplicate requests, including the absent-row case. -->
+  <select id="lockReceipt" resultType="com.thira.tps.document.Rows$Receipt">SELECT * FROM dbo.TPS_DOC_REQUEST WITH (UPDLOCK,HOLDLOCK,INDEX(UQ_TPS_DOC_REQUEST_KEY)) WHERE <include refid="receiptWhere"/></select>
+  <select id="findReceipt" resultType="com.thira.tps.document.Rows$Receipt">SELECT * FROM dbo.TPS_DOC_REQUEST WHERE <include refid="receiptWhere"/></select>
+  <select id="lockTemplate" resultType="com.thira.tps.document.Rows$Template">SELECT * FROM dbo.TPS_DOC_TEMPLATE WITH (UPDLOCK,HOLDLOCK) WHERE SITE_ID=#{siteId} AND TEMPLATE_ID=#{templateId,jdbcType=VARCHAR} AND ENABLED=1</select>
+  <select id="findTemplate" resultType="com.thira.tps.document.Rows$Template">SELECT * FROM dbo.TPS_DOC_TEMPLATE WHERE SITE_ID=#{siteId} AND TEMPLATE_ID=#{templateId,jdbcType=VARCHAR} AND ENABLED=1</select>
+  <select id="findRevision" resultType="com.thira.tps.document.Rows$Revision">SELECT * FROM dbo.TPS_DOC_REVISION WHERE SITE_ID=#{siteId} AND TEMPLATE_ID=#{templateId,jdbcType=VARCHAR} AND REVISION_ID=#{revisionId,jdbcType=VARCHAR}</select>
+  <select id="listTemplates" resultType="com.thira.tps.document.Rows$Listed">
+    SELECT t.TEMPLATE_ID,t.NAME,t.OWNER_MODULE,t.HEAD_REVISION_ID,t.HEAD_TOKEN,t.ACTIVE_REVISION_ID,t.CREATED_AT,r.REVISION_NO,r.CREATED_AT AS LAST_SAVED_AT
+    FROM dbo.TPS_DOC_TEMPLATE t JOIN dbo.TPS_DOC_REVISION r ON r.SITE_ID=t.SITE_ID AND r.TEMPLATE_ID=t.TEMPLATE_ID AND r.REVISION_ID=t.HEAD_REVISION_ID
+    WHERE t.SITE_ID=#{siteId} AND t.OWNER_MODULE=#{module} AND t.ENABLED=1
+    ORDER BY r.CREATED_AT DESC,t.TEMPLATE_ID OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+  </select>
+  <select id="countTemplates" resultType="long">SELECT COUNT_BIG(*) FROM dbo.TPS_DOC_TEMPLATE WHERE SITE_ID=#{siteId} AND OWNER_MODULE=#{module} AND ENABLED=1 AND HEAD_REVISION_ID IS NOT NULL</select>
+  <select id="listRevisions" resultType="com.thira.tps.document.Rows$Revision">SELECT TOP (100) SITE_ID,TEMPLATE_ID,REVISION_ID,REVISION_NO,BODY_HASH,CREATED_AT,CREATED_BY FROM dbo.TPS_DOC_REVISION WHERE SITE_ID=#{siteId} AND TEMPLATE_ID=#{templateId,jdbcType=VARCHAR} ORDER BY REVISION_NO DESC</select>
+  <insert id="insertTemplate">
+    INSERT dbo.TPS_DOC_TEMPLATE(SITE_ID,TEMPLATE_ID,OWNER_MODULE,NAME,HEAD_TOKEN,ACTIVE_TOKEN,ENABLED,CREATED_AT,CREATED_BY)
+    VALUES(#{siteId},#{templateId,jdbcType=VARCHAR},#{ownerModule},#{name},0,0,1,#{createdAt},#{createdBy})
+  </insert>
+  <insert id="insertRevision">
+    INSERT dbo.TPS_DOC_REVISION(SITE_ID,TEMPLATE_ID,REVISION_ID,REVISION_NO,PARENT_REVISION_ID,SCHEMA_VERSION,BODY_JSON,BODY_HASH,HASH_VERSION,VALIDATION_STATE,DIAGNOSTICS_JSON,CREATED_AT,CREATED_BY)
+    VALUES(#{siteId},#{templateId,jdbcType=VARCHAR},#{revisionId,jdbcType=VARCHAR},#{revisionNo},#{parentRevisionId,jdbcType=VARCHAR},#{schemaVersion},#{bodyJson,jdbcType=LONGNVARCHAR},#{bodyHash,jdbcType=BINARY},#{hashVersion},#{validationState},#{diagnosticsJson,jdbcType=LONGNVARCHAR},#{createdAt},#{createdBy})
+  </insert>
+  <update id="updateHead">UPDATE dbo.TPS_DOC_TEMPLATE SET HEAD_REVISION_ID=#{revisionId,jdbcType=VARCHAR},NAME=#{name},HEAD_TOKEN=#{newToken} WHERE SITE_ID=#{siteId} AND TEMPLATE_ID=#{templateId,jdbcType=VARCHAR} AND HEAD_TOKEN=#{oldToken} AND ENABLED=1</update>
+  <insert id="insertReceipt">
+    INSERT dbo.TPS_DOC_REQUEST(SITE_ID,RECEIPT_ID,ACTOR_ID,OPERATION,SCOPE_KIND,SCOPE_ID,REQUEST_KEY,FINGERPRINT,FINGERPRINT_VERSION,STATUS,RESULT_JSON,CREATED_AT,COMPLETED_AT)
+    VALUES(#{siteId},#{receiptId,jdbcType=VARCHAR},#{actorId},#{operation},#{scopeKind},#{scopeId,jdbcType=VARCHAR},#{requestKey},#{fingerprint,jdbcType=BINARY},#{fingerprintVersion},#{status},#{resultJson,jdbcType=LONGNVARCHAR},#{createdAt},#{completedAt})
+  </insert>
+</mapper>
