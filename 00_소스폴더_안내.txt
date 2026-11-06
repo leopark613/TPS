@@ -1,0 +1,38 @@
+TPS 소스 폴더 안내
+=================
+
+프런트엔드(React 화면) = frontend\src
+백엔드(Java Spring Boot) = server\src\main\java\com\thira\tps
+DB SQL(MyBatis) = server\src\main\resources\mapper
+실행 설정 = server\src\main\resources\application.yml
+
+[화면 소스]
+frontend\src\App.tsx          전체 화면, 업무영역 선택, 목록, 저장, 이력
+frontend\src\Canvas.tsx       양식 편집 캔버스
+frontend\src\api.ts           백엔드 API 호출
+frontend\src\editor-state.ts  편집/저장 상태 보호
+frontend\src\styles.css       화면 스타일
+
+[백엔드 소스]
+server\src\main\java\com\thira\tps\TpsApplication.java  프로그램 시작
+server\src\main\java\com\thira\tps\config              설정·인증
+server\src\main\java\com\thira\tps\document            저장·조회·이력·검증
+server\src\main\resources\mapper                       실제 SQL XML
+
+[그 외 폴더와 파일]
+pom.xml / mvnw.cmd       Maven 빌드 설정/실행기
+build.gradle / gradlew.bat  Gradle 선택 빌드 설정/실행기
+scripts                  빌드·실행·Eclipse·배포 포장 스크립트
+tests                    실제 DB·브라우저 통합 시험
+docs                     설계·명세·검증·로드맵
+ide                      Eclipse Run/Debug 설정과 안내
+database                 현재 문서 저장용 DB 생성 스크립트
+dist                     빌드 결과물. 여기의 파일을 소스처럼 수정하지 않습니다.
+
+보통 빌드: .\scripts\build.ps1 -BuildTool Maven
+세부 실행 안내: README.md
+전체 구조/완료/예정 로드맵: docs\ROADMAP.md
+
+지금은 기반 설정뿐 아니라 공통 양식 저장·재열기 소스/시험까지 완료됐습니다.
+Excel·데이터/QR·렌더·프린팅·LPS 발행/채번 등의 전체 업무 소스는 단계별로 추가합니다.
+frontend와 server는 각각 다른 제품이 아니라 하나의 TPS를 구성하는 화면과 서버입니다.
