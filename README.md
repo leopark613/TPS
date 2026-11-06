@@ -37,6 +37,7 @@ Java까지 포함한 Windows 배포본 생성:
 ## Eclipse·CI·검증·재개
 
 - [Eclipse 가져오기 및 Run/Debug](ide/ECLIPSE-SETUP.md)
+- [백엔드·프런트 구조와 개발 로드맵](docs/ROADMAP.md)
 - [설계 및 구현 범위](docs/ARCHITECTURE.md)
 - [검증 결과와 남은 범위](docs/VERIFICATION.md)
 - [Jenkins/Nexus 연결 준비](ci/README.md)
