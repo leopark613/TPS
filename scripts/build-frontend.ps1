@@ -36,7 +36,8 @@ try {
     & npm.cmd run build
     if($LASTEXITCODE -ne 0) {throw 'React build failed; the server resources were not updated.'}
     Set-Location -LiteralPath $repo
-    & (Join-Path $repo 'mvnw.cmd') -B -f (Join-Path $repo 'server\pom.xml') process-resources
+    # Windows PowerShell can leave a parenthesized absolute -f path unquoted in mvnw.cmd.
+    & .\mvnw.cmd -B -f server/pom.xml process-resources
     if($LASTEXITCODE -ne 0) {throw 'Maven resource copy failed; do not treat the server UI as updated.'}
     $dist=Join-Path $repo 'frontend\dist'; $static=Join-Path $repo 'server\target\classes\static'
     $count=0

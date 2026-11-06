@@ -25,7 +25,7 @@
 
 현재 Eclipse4.33/m2e2.6.1의 JAR 플러그인 호환 문제에는 m2e에서만3.4.2를 쓰고 일반CLI는3.5.1을 유지한다. frontend/dist는 copy-resources로 반영한다. POM XSD는 공식 원본을 로컬에 포함해 외부 XML 다운로드를 켜지 않고 해결했다. 실제 GUI에서 오류0개/경고6개를 확인했다. 사용자는 기동을 막지 않는 경고를 더 조사하지 않도록 지시했다. Spring Tools 외부 버전 정보 PKIX 팝업은 별도 사내 인증서 신뢰 문제이며 TLS 검증/인증서 저장소/전체 Java 검증 설정은 바꾸지 않았다.
 
-실제 Eclipse Run/Debug는 사용자가 다음 실행 안내에 따라 확인할 단계다. CLI 실행·실제 DB/웹 검증과 이를 구분한다. Excel·업무 SQL 관리·PDF/반복/페이지 분할·LPS 채번·물리 프린팅·운영 인증·최종 배포/성능 비교는 후속이다. GitHub push, 최종 PDF, 전체 참조 인계 패키지는 아직 실행하지 않았다.
+실제 Eclipse Run/Debug는 사용자가 다음 실행 안내에 따라 확인할 단계다. CLI 실행·실제 DB/웹 검증과 이를 구분한다. Excel·업무 SQL 관리·PDF/반복/페이지 분할·LPS 채번·물리 프린팅·운영 인증·최종 배포/성능 비교는 후속이다. 최종 PDF와 전체 참조 인계 패키지는 전체 1차 구현 후 준비한다.
 
 ## TPS-IMPL-001 이전 단위의 검증 이력
 
@@ -52,3 +52,7 @@
 Windows의 AF_UNIX selector 연결 오류에는 해당 실행 프로세스의 `jdk.net.unixdomain.tmpdir`을 이용한 JDK TCP 루프백 대체 경로를 검증했다. 전역 보안·방화벽 설정은 바꾸지 않았으며 다른 PC의 필수 기본값으로 간주하지 않는다. Eclipse4.33/JDK21/m2e 및 Lombok1.18.48 설치 준비를 확인했지만 **Eclipse GUI import·Run/Debug는 아직 검증하지 않았다.**
 
 실제 Jenkins/Nexus 연결·게시, GitHub push, 타인 PC 설치·출력, RPS/TPS 성능 비교, 전체 인계 패키지와 최종 PDF는 후속이다. 자세한 실행 증거와 실패 이력은 사용자 TPS 기록 정본의 `verification/TPS-IMPL-001`에 보관한다.
+
+## Windows PowerShell 5.1 화면 빌드 재검증
+
+괄호가 있는 실제 저장소 경로에서 `mvnw.cmd -f`에 절대 경로를 넘기면 Windows PowerShell 5.1이 경로를 따옴표 없이 전달해 Maven 호출이 중단됐다. 저장소 루트 기준 `-f server/pom.xml`로 바꾸고 `build-frontend.cmd`의 Windows PowerShell 분기로 실제 실행했다. React 빌드, Maven 리소스 복사, 3개 파일의 SHA-256 비교와 종료 코드 0을 확인했다.

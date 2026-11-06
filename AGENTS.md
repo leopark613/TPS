@@ -14,3 +14,5 @@ Read README.md, docs/ARCHITECTURE.md, docs/VERIFICATION.md, docs/PORTABLE-HANDOF
 - D056: Preserve actual legacy RPS/LPS business names and record mappings; invented illustrative names are not implementation requirements. Current next-slice contract is docs/spec/TPS-IMPL-002.md. Fixed local report-list query and saved-revision preview do not imply StoredQuery execution, printing or new DDL permission.
 
 - D057: Provide the complete local Eclipse/browser run guide after each implemented and tested unit. Preserve AutoBuild ON; the user deferred nonblocking warnings and optional Spring Tools TLS diagnostics. Use build-frontend.cmd for verified UI build/copy; distinguish real GUI import/APT checks from application Run/Debug. Continue independent authorized work without unnecessary questions.
+
+- D058: Push each validated TPS task commit to the user-approved GitHub origin on its current development branch. Keep local credentials, database data, and the canonical evidence out of that publication. The final handoff package has its separate completion gate.

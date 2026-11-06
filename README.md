@@ -48,4 +48,4 @@ Java까지 포함한 Windows 배포본 생성:
 - [데이터·QR 미리보기 구현 계약](docs/spec/TPS-IMPL-002.md)
 - [기존 RPS/LPS 명칭 대응](docs/LEGACY-NAME-MAPPING.md)
 
-GitHub push와 실제 Jenkins/Nexus 게시를 아직 실행하지 않았습니다. 기존 회사 CI나 서버 설정을 변경하지 않았습니다. 상세 조사·이력의 정본은 사용자가 지정한 TPS 기록 폴더이며, 전체 인계 패키지는 전체 1차 구현·테스트 완료 후 작성합니다.
+검증한 개발 커밋은 GitHub 작업 브랜치로 푸시합니다. Jenkins/Nexus 게시는 배포 단계에서 진행합니다. 상세 조사·이력의 정본은 사용자가 지정한 TPS 기록 폴더이며, 전체 인계 패키지는 전체 1차 구현·테스트 완료 후 작성합니다.
