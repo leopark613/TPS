@@ -9,6 +9,8 @@ DB SQL(MyBatis) = server\src\main\resources\mapper
 [화면 소스]
 frontend\src\App.tsx          전체 화면, 업무영역 선택, 목록, 저장, 이력
 frontend\src\Canvas.tsx       양식 편집 캔버스
+frontend\src\ReportPanel.tsx  일반 보고서 데이터 연결·저장본 미리보기
+frontend\src\report.ts        필드 연결·QR 표시 계약
 frontend\src\api.ts           백엔드 API 호출
 frontend\src\editor-state.ts  편집/저장 상태 보호
 frontend\src\styles.css       화면 스타일
@@ -17,6 +19,9 @@ frontend\src\styles.css       화면 스타일
 server\src\main\java\com\thira\tps\TpsApplication.java  프로그램 시작
 server\src\main\java\com\thira\tps\config              설정·인증
 server\src\main\java\com\thira\tps\document            저장·조회·이력·검증
+server\src\main\java\com\thira\tps\rps\viewer          RPS 데이터·QR 미리보기
+  GeneralViewerService.java  기존 RPS 서비스명 계승, bindDataSource / preview
+  ReportViewerController.java  신규 HTTP 경계: ReportList / Preview
 server\src\main\resources\mapper                       실제 SQL XML
 
 [그 외 폴더와 파일]
@@ -34,5 +39,9 @@ dist                     빌드 결과물. 여기의 파일을 소스처럼 수�
 전체 구조/완료/예정 로드맵: docs\ROADMAP.md
 
 지금은 기반 설정뿐 아니라 공통 양식 저장·재열기 소스/시험까지 완료됐습니다.
-Excel·데이터/QR·렌더·프린팅·LPS 발행/채번 등의 전체 업무 소스는 단계별로 추가합니다.
+일반 보고서의 한 행 데이터·QR 미리보기를 추가했습니다. 실제 업무 SQL·Excel·PDF·프린팅·LPS 발행/채번은 단계별 후속 구현입니다.
 frontend와 server는 각각 다른 제품이 아니라 하나의 TPS를 구성하는 화면과 서버입니다.
+
+Eclipse 가져오기: server는 Maven > Existing Maven Projects, frontend는 General Project.
+프런트 소스 변경은 npm/Vite 빌드 후 서버 리소스에 반영해야 화면에 적용됩니다.
+위 전체 빌드 스크립트가 화면과 서버를 함께 빌드합니다. 자세한 절차: ide\ECLIPSE-SETUP.md

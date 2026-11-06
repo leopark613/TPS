@@ -7,6 +7,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Supplier;
 import com.thira.tps.config.RuntimeSettings;
+import com.thira.tps.rps.viewer.ReportDataContract;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -46,6 +47,7 @@ public class DocumentService {
     public ApiDtos.TemplateView create(String actor,String requestKey,String draftId,String owner,JsonNode document) {
         settings.checkModule(owner); actor(actor);
         var checked=validator.check(document);
+        ReportDataContract.checkOwner(owner,checked.getDocument());
         Rows.Receipt request=scope(actor,"CREATE",draftId,requestKey);
         request.setFingerprint(fingerprint(request,owner,null,checked.getDocument()));
         return retry(() -> transaction.execute(status -> {
@@ -73,6 +75,7 @@ public class DocumentService {
             ApiDtos.TemplateView previous=completed(db.lockReceipt(request),request.getFingerprint());
             if(previous!=null) return previous;
             Rows.Template template=required(db.lockTemplate(site(),templateId));
+            ReportDataContract.checkOwner(template.getOwnerModule(),checked.getDocument());
             String current=HeadEtag.of(template);
             if(!current.equals(ifMatch)) throw new ApiException(412,"HEAD_CHANGED","다른 저장본이 있습니다. 현재 편집 내용은 유지됩니다.",List.of(),current);
             Rows.Revision old=revision(templateId,template.getHeadRevisionId());

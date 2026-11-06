@@ -66,4 +66,16 @@ class DocumentServiceTest {
         Rows.Revision r=new Rows.Revision();r.setBodyJson(json.canonical(document));r.setHashVersion(CanonicalJson.HASH_VERSION);r.setBodyHash(new byte[32]);when(db.findRevision(anyString(),eq(id),eq(rid))).thenReturn(r);
         assertThatThrownBy(()->service.head(id)).isInstanceOf(ApiException.class).extracting("code").isEqualTo("DOCUMENT_INTEGRITY_FAILURE");
     }
+    @Test void rpsExampleDatasetCannotBeCreatedUnderLpsOwnership() {
+        ((tools.jackson.databind.node.ArrayNode)document.get("datasets")).add(com.thira.tps.rps.viewer.ReportDataContract.dataset(json));
+        assertThatThrownBy(()->service.create("tps-developer",key,draft,"LPS",document)).isInstanceOf(ApiException.class).extracting("code").isEqualTo("QUERY_MODULE_MISMATCH");
+        verifyNoInteractions(db,tx);
+    }
+    @Test void rpsExampleDatasetCannotBeSavedIntoExistingLpsTemplate() {
+        ((tools.jackson.databind.node.ArrayNode)document.get("datasets")).add(com.thira.tps.rps.viewer.ReportDataContract.dataset(json));
+        String id=UUID.randomUUID().toString();Rows.Template row=new Rows.Template();row.setTemplateId(id);row.setOwnerModule("LPS");row.setHeadRevisionId(UUID.randomUUID().toString());row.setHeadToken(2);
+        when(db.lockTemplate(anyString(),eq(id))).thenReturn(row);
+        assertThatThrownBy(()->service.save("tps-developer",key,id,HeadEtag.of(row),document)).isInstanceOf(ApiException.class).extracting("code").isEqualTo("QUERY_MODULE_MISMATCH");
+        verify(db,never()).insertRevision(any());verify(tx).rollback(any());
+    }
 }

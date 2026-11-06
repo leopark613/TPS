@@ -11,6 +11,7 @@ import com.thira.tps.document.ApiException;
 @Component
 public class RuntimeSettings {
     private final String siteId;
+    private final String rpsReferenceSiteId;
     private final List<String> enabledModules;
     private final String developerPassword;
     public RuntimeSettings(Environment env) {
@@ -19,6 +20,9 @@ public class RuntimeSettings {
         siteId=env.getProperty("tps.site-id", "TPS_DEV");
         if(siteId.isBlank() || siteId.getBytes(StandardCharsets.UTF_8).length>40)
             throw new IllegalStateException("TPS_SITE_ID must contain 1..40 UTF-8 bytes.");
+        rpsReferenceSiteId=env.getProperty("TPS_RPS_REFERENCE_SITE_ID",siteId);
+        if(rpsReferenceSiteId.isBlank() || rpsReferenceSiteId.getBytes(StandardCharsets.UTF_8).length>40)
+            throw new IllegalStateException("TPS_RPS_REFERENCE_SITE_ID must contain 1..40 UTF-8 bytes.");
         developerPassword=env.getProperty("tps.dev-password", "");
         if(developerPassword.length()<12) throw new IllegalStateException("TPS_DEV_PASSWORD must be supplied (at least 12 characters).");
         enabledModules=Arrays.stream(env.getProperty("tps.enabled-modules", "RPS,LPS").split(",")).map(String::trim).distinct().toList();

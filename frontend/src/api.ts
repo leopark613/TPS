@@ -1,5 +1,6 @@
 import type { Diagnostic, Module, RevisionSummary, Session, TemplatePage, TemplateView } from './types';
 import type { SaveSnapshot } from './editor-state';
+import type { ReportList, ReportPreview } from './report';
 
 export class ApiError extends Error {
   constructor(public status: number, public code: string, message: string, public diagnostics: Diagnostic[] = []) { super(message); this.name = 'ApiError'; }
@@ -30,6 +31,10 @@ export class TpsApi {
     } finally { clearTimeout(timeout); }
   }
   session(): Promise<Session> { return this.request('/session'); }
+  reportList(): Promise<ReportList> { return this.request('/rps/ReportList'); }
+  reportPreview(templateId: string, revisionId: string, reportId: string | null): Promise<ReportPreview> {
+    return this.request('/rps/Preview', { method: 'POST', body: JSON.stringify({ templateId, revisionId, reportId }) });
+  }
   list(module: Module, page = 0): Promise<TemplatePage> { return this.request(`/templates?module=${module}&page=${page}&size=50`); }
   head(id: string): Promise<TemplateView> { return this.request(`/templates/${encodeURIComponent(id)}/head`); }
   revisions(id: string): Promise<{ items: RevisionSummary[] }> { return this.request(`/templates/${encodeURIComponent(id)}/revisions`); }

@@ -87,7 +87,21 @@ public final class LocalDbObserver {
         try (PreparedStatement ps = c.prepareStatement("SELECT TEMPLATE_ID FROM dbo.TPS_DOC_TEMPLATE WHERE SITE_ID=? ORDER BY TEMPLATE_ID")) { ps.setString(1,site); try(ResultSet rs=ps.executeQuery()) { while(rs.next()) ids.add(q(rs.getString(1).toLowerCase(Locale.ROOT))); } }
         long active = count(c, "SELECT COUNT_BIG(*) FROM dbo.TPS_DOC_TEMPLATE WHERE SITE_ID=? AND (ACTIVE_REVISION_ID IS NOT NULL OR ACTIVE_TOKEN<>0)", site);
         long orphan = count(c, "SELECT COUNT_BIG(*) FROM dbo.TPS_DOC_TEMPLATE WHERE SITE_ID=? AND (HEAD_REVISION_ID IS NULL OR HEAD_TOKEN<=0)", site);
-        return "{\"rps\":" + rps + ",\"rpsCatalogHash\":" + q(catalogHash(c)) + ",\"otherSites\":" + other + ",\"site\":" + own + ",\"templateIds\":" + ids + ",\"activeCount\":" + active + ",\"uncommittedHeadCount\":" + orphan + "}";
+        return "{\"rps\":" + rps + ",\"rpsCatalogHash\":" + q(catalogHash(c)) + ",\"databaseStructureHash\":"+q(databaseStructureHash(c))+",\"otherSites\":" + other + ",\"site\":" + own + ",\"templateIds\":" + ids + ",\"activeCount\":" + active + ",\"uncommittedHeadCount\":" + orphan + "}";
+    }
+    static String databaseStructureHash(Connection c) throws Exception {
+        stage="snapshot-database-structure";
+        MessageDigest d=MessageDigest.getInstance("SHA-256");
+        // No row data. Include every user-table schema, index, constraint and trigger definition.
+        String[] queries={
+            "SELECT s.name,t.name,c.column_id,c.name,ty.name,c.max_length,c.precision,c.scale,c.is_nullable,c.collation_name,c.is_identity,dc.definition FROM sys.tables t JOIN sys.schemas s ON s.schema_id=t.schema_id JOIN sys.columns c ON c.object_id=t.object_id JOIN sys.types ty ON ty.user_type_id=c.user_type_id LEFT JOIN sys.default_constraints dc ON dc.object_id=c.default_object_id WHERE t.is_ms_shipped=0 ORDER BY s.name,t.name,c.column_id",
+            "SELECT s.name,t.name,i.name,i.type,i.is_unique,i.is_primary_key,i.is_unique_constraint,i.is_disabled,i.filter_definition,ic.index_column_id,ic.column_id,ic.key_ordinal,ic.is_descending_key,ic.is_included_column FROM sys.tables t JOIN sys.schemas s ON s.schema_id=t.schema_id JOIN sys.indexes i ON i.object_id=t.object_id LEFT JOIN sys.index_columns ic ON ic.object_id=i.object_id AND ic.index_id=i.index_id WHERE t.is_ms_shipped=0 ORDER BY s.name,t.name,i.index_id,ic.index_column_id",
+            "SELECT s.name,t.name,cc.name,cc.definition,cc.is_disabled,cc.is_not_trusted FROM sys.tables t JOIN sys.schemas s ON s.schema_id=t.schema_id JOIN sys.check_constraints cc ON cc.parent_object_id=t.object_id WHERE t.is_ms_shipped=0 ORDER BY s.name,t.name,cc.name",
+            "SELECT s.name,t.name,f.name,f.referenced_object_id,f.delete_referential_action,f.update_referential_action,f.is_disabled,f.is_not_trusted,fc.constraint_column_id,fc.parent_column_id,fc.referenced_column_id FROM sys.tables t JOIN sys.schemas s ON s.schema_id=t.schema_id JOIN sys.foreign_keys f ON f.parent_object_id=t.object_id JOIN sys.foreign_key_columns fc ON fc.constraint_object_id=f.object_id WHERE t.is_ms_shipped=0 ORDER BY s.name,t.name,f.name,fc.constraint_column_id",
+            "SELECT s.name,t.name,tr.name,tr.is_disabled,m.definition FROM sys.tables t JOIN sys.schemas s ON s.schema_id=t.schema_id JOIN sys.triggers tr ON tr.parent_id=t.object_id LEFT JOIN sys.sql_modules m ON m.object_id=tr.object_id WHERE t.is_ms_shipped=0 ORDER BY s.name,t.name,tr.name"
+        };
+        for(String sql:queries) { feed(d,sql.getBytes(StandardCharsets.UTF_8)); try(Statement st=c.createStatement()) {st.setQueryTimeout(10);try(ResultSet rs=st.executeQuery(sql)){while(rs.next()) for(int i=1;i<=rs.getMetaData().getColumnCount();i++){String v=rs.getString(i);if(v==null)d.update((byte)0);else{d.update((byte)1);feed(d,v.getBytes(StandardCharsets.UTF_8));}}}} }
+        return hex(d.digest());
     }
     static String catalogHash(Connection c) throws Exception {
         stage = "snapshot-rps-catalog";

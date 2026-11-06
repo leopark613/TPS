@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 ../ide/schema/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-parent</artifactId><version>4.1.2</version><relativePath/></parent>
   <groupId>com.thira.tps</groupId><artifactId>tps-server</artifactId><version>0.1.0-SNAPSHOT</version>
@@ -13,15 +13,23 @@
     <dependency><groupId>org.projectlombok</groupId><artifactId>lombok</artifactId><optional>true</optional></dependency>
     <dependency><groupId>org.mapstruct</groupId><artifactId>mapstruct</artifactId><version>${mapstruct.version}</version></dependency>
     <dependency><groupId>com.networknt</groupId><artifactId>json-schema-validator</artifactId><version>3.0.9</version></dependency>
+    <dependency><groupId>com.google.zxing</groupId><artifactId>core</artifactId><version>3.5.4</version></dependency>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
   </dependencies>
   <build>
     <finalName>tps-server</finalName>
     <resources>
       <resource><directory>src/main/resources</directory></resource>
-      <resource><directory>../frontend/dist</directory><targetPath>static</targetPath></resource>
     </resources>
     <plugins>
+      <!-- Keep a sibling frontend build out of Eclipse's Java resource folders.
+           Both CLI and m2e copy the same files to the packaged static directory. -->
+      <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-resources-plugin</artifactId><executions>
+        <execution><id>copy-frontend</id><phase>process-resources</phase><goals><goal>copy-resources</goal></goals><configuration>
+          <outputDirectory>${project.build.outputDirectory}/static</outputDirectory>
+          <resources><resource><directory>${project.basedir}/../frontend/dist</directory><filtering>false</filtering></resource></resources>
+        </configuration></execution>
+      </executions></plugin>
       <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId><configuration><parameters>true</parameters><annotationProcessorPaths>
         <path><groupId>org.projectlombok</groupId><artifactId>lombok</artifactId><version>${lombok.version}</version></path>
         <path><groupId>org.projectlombok</groupId><artifactId>lombok-mapstruct-binding</artifactId><version>0.2.0</version></path>
@@ -30,4 +38,11 @@
       <plugin><groupId>org.springframework.boot</groupId><artifactId>spring-boot-maven-plugin</artifactId><configuration><excludes><exclude><groupId>org.projectlombok</groupId><artifactId>lombok</artifactId></exclude></excludes></configuration></plugin>
     </plugins>
   </build>
+  <profiles>
+    <!-- Eclipse 4.33 / m2e 2.6.x cannot construct the 3.5.x JarMojo in its
+         manifest configurator. The normal Maven/Gradle release build is unchanged. -->
+    <profile><id>eclipse-m2e-compatibility</id><activation><property><name>m2e.version</name></property></activation>
+      <properties><maven-jar-plugin.version>3.4.2</maven-jar-plugin.version></properties>
+    </profile>
+  </profiles>
 </project>

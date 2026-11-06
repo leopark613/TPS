@@ -27,4 +27,13 @@ class RuntimeSettingsTest {
     @Test void siteIsBoundedByUtf8Bytes() {
         var env=environment().withProperty("tps.site-id","가".repeat(14));assertThatThrownBy(()->new RuntimeSettings(env)).isInstanceOf(IllegalStateException.class);
     }
+    @Test void reportReferenceSiteIsExplicitBoundedAndDefaultsToAuthenticatedSite() {
+        var env=environment().withProperty("tps.site-id","editor-site");
+        assertThat(new RuntimeSettings(env).getRpsReferenceSiteId()).isEqualTo("editor-site");
+        env.setProperty("TPS_RPS_REFERENCE_SITE_ID","reference-site");
+        assertThat(new RuntimeSettings(env).getRpsReferenceSiteId()).isEqualTo("reference-site");
+        assertThat(new RuntimeSettings(env).getSiteId()).isEqualTo("editor-site");
+        env.setProperty("TPS_RPS_REFERENCE_SITE_ID","가".repeat(14));assertThatThrownBy(()->new RuntimeSettings(env)).isInstanceOf(IllegalStateException.class);
+        env.setProperty("TPS_RPS_REFERENCE_SITE_ID","");assertThatThrownBy(()->new RuntimeSettings(env)).isInstanceOf(IllegalStateException.class);
+    }
 }

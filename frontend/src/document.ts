@@ -1,4 +1,5 @@
 import type { Document, Element, Frame } from './types';
+import { hasReportDataset, QR_DEFAULTS, REPORT_DATASET_ID, supportedBindings, supportedQr } from './report';
 
 export function newDocument(): Document {
   return {
@@ -20,11 +21,11 @@ export function replaceElement(doc: Document, id: string, update: (element: Elem
   return result;
 }
 
-export function addElement(doc: Document, type: 'tps.text' | 'tps.rectangle', id: string): Document {
+export function addElement(doc: Document, type: 'tps.text' | 'tps.rectangle' | 'tps.qr', id: string): Document {
   const result = structuredClone(doc);
   const offset = Math.min(elements(doc).length, 10) * 3000;
-  result.sections[0].bands[0].elements.push({ id, type, typeVersion: '1', frame: { x: 15000 + offset, y: 35000 + offset, width: 80000, height: type === 'tps.text' ? 12000 : 30000 },
-    properties: type === 'tps.text' ? { text: '새 텍스트', fontSizePt: '12', color: '#17324d' } : { fill: '#eef2f6', stroke: '#2463a6' }, bindings: [], children: [] });
+  result.sections[0].bands[0].elements.push({ id, type, typeVersion: '1', frame: { x: 15000 + offset, y: 35000 + offset, width: type === 'tps.qr' ? 30000 : 80000, height: type === 'tps.text' ? 12000 : 30000 },
+    properties: type === 'tps.text' ? { text: '새 텍스트', fontSizePt: '12', color: '#17324d' } : type === 'tps.qr' ? { ...QR_DEFAULTS } : { fill: '#eef2f6', stroke: '#2463a6' }, bindings: [], children: [] });
   if (!result.requiredFeatures.some(f => f.id === type && f.version === '1')) result.requiredFeatures.push({ id: type, version: '1' });
   return result;
 }
@@ -43,9 +44,10 @@ export function canEditDocument(doc: Document): boolean {
   const section = doc.sections[0];
   if (section.page.width > 2000000 || section.page.height > 2000000 || section.bands.length !== 1) return false;
   const band = section.bands[0];
-  return band.kind === 'detail' && band.childBands.length === 0 && !('datasetId' in band) && doc.datasets.length === 0 && doc.assets.length === 0 &&
-    doc.requiredFeatures.every(f => ['tps.text', 'tps.rectangle'].includes(f.id) && f.version === '1') &&
-    elements(doc).every(e => ['tps.text', 'tps.rectangle'].includes(e.type) && e.typeVersion === '1' && e.bindings.length === 0 && e.children.length === 0 && (e.frame.rotationMilliDegrees ?? 0) === 0);
+  const connected = hasReportDataset(doc);
+  return band.kind === 'detail' && band.childBands.length === 0 && (!('datasetId' in band) || (connected && band.datasetId === REPORT_DATASET_ID)) && (doc.datasets.length === 0 || connected) && doc.assets.length === 0 &&
+    doc.requiredFeatures.every(f => ['tps.text', 'tps.rectangle', 'tps.qr'].includes(f.id) && f.version === '1') &&
+    elements(doc).every(e => ['tps.text', 'tps.rectangle', 'tps.qr'].includes(e.type) && e.typeVersion === '1' && supportedBindings(e, connected) && (e.type !== 'tps.qr' || supportedQr(e)) && e.children.length === 0 && (e.frame.rotationMilliDegrees ?? 0) === 0);
 }
 
 export function moveFrame(frame: Frame, dx: number, dy: number): Frame {

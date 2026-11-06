@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import type { KeyboardEvent, PointerEvent } from 'react';
 import type { Document, Element } from './types';
 import { elements, moveFrame, replaceElement, safeColor, safeFontSize } from './document';
+import { elementLabel } from './report';
 
 interface Props { document: Document; selected: string | null; onSelect: (id: string | null) => void; onChange: (document: Document) => void; readOnly: boolean }
 export function Canvas({ document: doc, selected, onSelect, onChange, readOnly }: Props) {
@@ -39,13 +40,13 @@ export function Canvas({ document: doc, selected, onSelect, onChange, readOnly }
       <rect width={width} height={height} fill="white" />
       <rect className="page-margin" x={page.margins.left} y={page.margins.top} width={Math.max(0, width - page.margins.left - page.margins.right)} height={Math.max(0, height - page.margins.top - page.margins.bottom)} />
       <g transform={`translate(${page.margins.left},${page.margins.top})`}>
-        {elements(doc).filter(e => ['tps.text', 'tps.rectangle'].includes(e.type)).map(element => {
+        {elements(doc).filter(e => ['tps.text', 'tps.rectangle', 'tps.qr'].includes(e.type)).map(element => {
           const f = element.frame; const active = selected === element.id; const font = safeFontSize(element.properties.fontSizePt) * 352.778;
-          const text = typeof element.properties.text === 'string' ? element.properties.text : '';
-          return <g key={element.id} className={`canvas-element ${active ? 'selected' : ''}`} tabIndex={0} role="button" aria-label={element.type === 'tps.text' ? `텍스트 요소: ${text.slice(0, 40)}` : `사각형 요소: ${element.id}`} aria-pressed={active}
+          const text = elementLabel(element);
+          return <g key={element.id} className={`canvas-element ${active ? 'selected' : ''}`} tabIndex={0} role="button" aria-label={element.type === 'tps.text' ? `텍스트 요소: ${text.slice(0, 40)}` : element.type === 'tps.qr' ? `QR 요소: ${text}` : `사각형 요소: ${element.id}`} aria-pressed={active}
             transform={`translate(${f.x},${f.y}) rotate(${(f.rotationMilliDegrees ?? 0) / 1000},${f.width / 2},${f.height / 2})`} onPointerDown={e => begin(e, element)} onFocus={() => onSelect(element.id)} onKeyDown={e => keyMove(e, element)}>
-            {element.type === 'tps.rectangle' ? <rect width={f.width} height={f.height} fill={safeColor(element.properties.fill, '#eef2f6')} stroke={safeColor(element.properties.stroke, '#2463a6')} strokeWidth={300} /> :
-              <svg width={f.width} height={f.height} overflow="hidden"><text x={0} y={font} fill={safeColor(element.properties.color, '#17324d')} fontSize={font}>{text.split('\n').map((line, i) => <tspan key={i} x={0} dy={i === 0 ? 0 : font * 1.3}>{line || ' '}</tspan>)}</text></svg>}
+            {element.type === 'tps.qr' ? <svg width={f.width} height={f.height} viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet"><rect x="1" y="1" width="98" height="98" fill="#f2f6fa" stroke="#7a94ae" strokeWidth="1" strokeDasharray="4 3" /><text x="50" y="45" textAnchor="middle" fill="#52718e" fontSize="20">QR</text><text x="50" y="65" textAnchor="middle" fill="#52718e" fontSize="9">{text}</text><text x="50" y="83" textAnchor="middle" fill="#647586" fontSize="7">배치용 표시</text></svg> : element.type === 'tps.rectangle' ? <rect width={f.width} height={f.height} fill={safeColor(element.properties.fill, '#eef2f6')} stroke={safeColor(element.properties.stroke, '#2463a6')} strokeWidth={300} /> :
+              <svg width={f.width} height={f.height} overflow="hidden"><text xmlSpace="preserve" style={{ whiteSpace: 'pre' }} x={0} y={font} fill={safeColor(element.properties.color, '#17324d')} fontSize={font}>{text.split('\n').map((line, i) => <tspan key={i} x={0} dy={i === 0 ? 0 : font * 1.3}>{line || ' '}</tspan>)}</text></svg>}
             <rect className="element-hitbox" width={f.width} height={f.height} />
             {active && <><rect className="element-outline" width={f.width} height={f.height} /><rect className="element-handle" width={1300} height={1300} x={-650} y={-650} /><rect className="element-handle" width={1300} height={1300} x={f.width - 650} y={f.height - 650} /></>}
           </g>;

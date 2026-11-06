@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.*;
 import com.networknt.schema.*;
 import com.networknt.schema.dialect.Dialects;
+import com.thira.tps.rps.viewer.ReportDataContract;
 import lombok.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
@@ -13,7 +14,7 @@ import tools.jackson.databind.JsonNode;
 public class DocumentValidator {
     private final Schema schema;
     private final CanonicalJson json;
-    private static final Set<String> BASIC=Set.of("tps.text","tps.rectangle");
+    private static final Set<String> BASIC=Set.of("tps.text","tps.rectangle","tps.qr");
     public DocumentValidator(CanonicalJson json) throws IOException {
         this.json=json;
         try(var input=new ClassPathResource("schema/document.schema.json").getInputStream()) {
@@ -47,7 +48,8 @@ public class DocumentValidator {
             for(JsonNode field:dataset.get("fields")) if(!fields.add(field.get("id").asString())) invalid("DUPLICATE_ID","/datasets/fields","필드 식별자가 중복됩니다.");
         }
         List<ApiDtos.Diagnostic> diagnostics=new ArrayList<>();
-        boolean basic=doc.get("sections").size()==1 && doc.get("datasets").isEmpty();
+        boolean basic=doc.get("sections").size()==1 && (doc.get("datasets").isEmpty() ||
+            doc.get("datasets").size()==1 && ReportDataContract.supportedDataset(doc.get("datasets").get(0)));
         for(JsonNode feature:doc.get("requiredFeatures")) {
             if(!BASIC.contains(feature.get("id").asString()) || !"1".equals(feature.get("version").asString())) {
                 basic=false; warning(diagnostics,"UNSUPPORTED_FEATURE","/requiredFeatures","이 양식에 현재 편집기가 지원하지 않는 기능이 있습니다.");
@@ -78,7 +80,8 @@ public class DocumentValidator {
     private boolean band(JsonNode band,Set<String> ids,Set<String> elements,Map<String,Set<String>> datasets,int[] count,List<ApiDtos.Diagnostic> diagnostics) {
         unique(ids,band.get("id").asString(),"/sections/bands");
         if(band.has("datasetId") && !datasets.containsKey(band.get("datasetId").asString())) invalid("MISSING_DATASET_REFERENCE","/sections/bands/datasetId","데이터 집합을 찾을 수 없습니다.");
-        boolean basic="detail".equals(band.get("kind").asString()) && band.get("childBands").isEmpty() && !band.has("datasetId");
+        boolean basic="detail".equals(band.get("kind").asString()) && band.get("childBands").isEmpty() &&
+            (!band.has("datasetId") || ReportDataContract.DATASET_ID.equals(band.get("datasetId").asString()));
         for(JsonNode element:band.get("elements")) basic &= element(element,ids,elements,datasets,count,diagnostics);
         for(JsonNode child:band.get("childBands")) band(child,ids,elements,datasets,count,diagnostics);
         return basic;
@@ -88,9 +91,13 @@ public class DocumentValidator {
         String id=element.get("id").asString(); unique(ids,id,"/sections/elements"); elements.add(id);
         boolean supported=BASIC.contains(element.get("type").asString()) && "1".equals(element.get("typeVersion").asString());
         if(!supported) warning(diagnostics,"UNSUPPORTED_ELEMENT","/sections/elements","지원하지 않는 요소를 원본 그대로 보존했습니다.");
-        boolean basic=supported && element.get("bindings").isEmpty() && element.get("children").isEmpty();
+        boolean basic=supported && element.get("children").isEmpty();
+        if("tps.qr".equals(element.get("type").asString()) && !ReportDataContract.supportedQrProperties(element.get("properties"))) basic=false;
         if(element.get("frame").has("rotationMilliDegrees") && element.get("frame").get("rotationMilliDegrees").asLong()!=0) basic=false;
+        Set<String> targets=new HashSet<>();
         for(JsonNode binding:element.get("bindings")) {
+            if(!targets.add(binding.get("property").asString())) invalid("DUPLICATE_BINDING","/sections/elements/bindings","같은 속성에 여러 데이터 연결을 지정할 수 없습니다.");
+            basic &= ReportDataContract.supportedBinding(element,binding);
             JsonNode source=binding.get("source");
             if("field".equals(source.get("kind").asString())) {
                 Set<String> fields=datasets.get(source.get("datasetId").asString());

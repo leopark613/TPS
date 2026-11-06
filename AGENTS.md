@@ -10,3 +10,7 @@ Read README.md, docs/ARCHITECTURE.md, docs/VERIFICATION.md, docs/PORTABLE-HANDOF
 - Keep local Eclipse paths/configuration out of portable runtime assumptions. Secrets are process inputs, not launch-file contents.
 - The final portable knowledge/reference package and design/manual PDFs are due after the agreed full first implementation and tests, not this first vertical slice. Keep editable records current meanwhile.
 - Clean only verified task-owned temporary files/processes after evidence is retained. Preserve user processes, originals, deliverables, installed tools and intentional backups. Delayed user answers never authorize cancellation or rollback.
+
+- D056: Preserve actual legacy RPS/LPS business names and record mappings; invented illustrative names are not implementation requirements. Current next-slice contract is docs/spec/TPS-IMPL-002.md. Fixed local report-list query and saved-revision preview do not imply StoredQuery execution, printing or new DDL permission.
+
+- D057: Provide the complete local Eclipse/browser run guide after each implemented and tested unit. Preserve AutoBuild ON; the user deferred nonblocking warnings and optional Spring Tools TLS diagnostics. Use build-frontend.cmd for verified UI build/copy; distinguish real GUI import/APT checks from application Run/Debug. Continue independent authorized work without unnecessary questions.

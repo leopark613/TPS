@@ -1,6 +1,6 @@
 # TPS 소스 구조와 개발 로드맵
 
-2026-11-06. 현재는 **개발 기반 + 양식 저장·재열기 첫 기능**이 구현·검증됐다. 전체 TPS 기능은 앞으로 단계별로 완성한다.
+2026-11-06. 현재는 **개발 기반 + 양식 저장·재열기 + 일반 보고서 한 행 데이터·QR 미리보기**를 구현했다. 전체 TPS 기능은 앞으로 단계별로 완성한다. 실제 검증 범위는 VERIFICATION.md를 따른다.
 
 ## 한눈에 보는 실행 구조
 
@@ -8,7 +8,7 @@
 사용자 브라우저
     React 화면 — RPS 보고서 / LPS 라벨 선택
         ↓ HTTP API
-    Spring Boot 한 개 — 양식 검증·저장·버전 처리
+    Spring Boot 한 개 — 양식 검증·저장·버전 + RPS 데이터·QR 해석
         ↓ MyBatis의 SQL
     SQL Server의 TPS DB / dbo
 ```
@@ -54,7 +54,7 @@ TPS(ThiraReportSystem)
 └─ dist/                           빌드·시험 배포 결과물(Git 제외)
 ```
 
-현재 별도 `rps/`, `lps/` 업무 구현 패키지가 모두 만들어진 것은 아니다. 공통 `document` 기능에서 RPS/LPS의 저장 소유와 사용 가능 설정을 구분한다. 리포트 실행, LPS 발행·채번 등 전용 업무 소스는 해당 단계를 구현하면서 같은 TPS 안에 추가한다.
+현재 `rps/viewer`에 `GeneralViewerService`와 조회·미리보기 API를 추가했다. React의 `ReportPanel.tsx`와 `report.ts`가 연결·선택행·미리보기 화면을 담당한다. 공통 `document`는 계속 문서 저장·버전을 맡는다. `lps` 발행·채번 패키지는 아직 구현하지 않았고 원본 업무명 대응표를 기준으로 같은 TPS 안에 추가한다.
 
 ## 지금 끝난 것과 남은 것
 
@@ -66,7 +66,8 @@ TPS(ThiraReportSystem)
 | 프런트 첫 기능 | RPS/LPS 선택, 텍스트·사각형 편집, 저장·재열기·이력 화면 구현 |
 | 시험 | 단위·실제 DB·브라우저·재시작·기존 데이터 보존 검증 통과 |
 | Eclipse | JDK21/Lombok 준비 및 실행 설정 제공. 실제 GUI import/Run·Debug는 후속 |
-| 보고서·LPS 전체 업무 | 데이터/QR·Excel 가져오기·렌더·프린팅·발행·채번 등을 추가해야 함 |
+| 일반 보고서 데이터·QR | 로컬 보고서 목록 예제의 한 행을 텍스트·QR에 연결하고 정확한 저장 버전으로 미리보기 |
+| 보고서·LPS 전체 업무 | 실제 업무 SQL 관리·Excel 가져오기·PDF/페이지 구성·프린팅·발행·채번은 후속 |
 | Jenkins/Nexus | 연결 설정 준비. 회사 서버에서 실제 빌드·게시를 실행한 상태는 아님 |
 | 최종 배포 | Windows 시험 패키지 생성. 다른 사람 PC·실제 프린터 검증은 후속 |
 
@@ -75,6 +76,8 @@ TPS(ThiraReportSystem)
 ## 무엇으로 빌드하고 실행하나
 
 **평소에는 Maven으로 빌드하면 된다.** Gradle은 동일 소스를 빌드하는 선택지다. 둘을 순서대로 매번 실행할 필요는 없다.
+
+**화면만 바꿨다면 루트 `build-frontend.cmd`를 더블클릭한다.** `frontend/src` → `frontend/dist` → `server/target/classes/static`까지 빌드·복사·파일 일치 검사를 수행한다. Eclipse에서 F5 후 서버 실행/브라우저 새로고침을 한다. 이 화면 전용 작업은 기존 실행 JAR을 다시 만들지는 않으므로 배포본 갱신에는 아래 전체 빌드를 사용한다.
 
 ```powershell
 # 소스 루트, JDK21/JAVA_HOME 및 Node24 준비

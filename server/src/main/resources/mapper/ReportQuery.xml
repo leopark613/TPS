@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thira.tps.rps.viewer.ReportQuery">
+  <resultMap id="reportRow" type="com.thira.tps.rps.viewer.ReportViewerDtos$ReportRow">
+    <id column="REPORTID" property="reportId"/>
+    <result column="REPORTNAME" property="reportName"/>
+    <result column="REPORTCLASSID" property="reportClassId"/>
+  </resultMap>
+  <!-- One extra bounded row detects truncation. No StoredQuery, XML or printer data. -->
+  <select id="reportList" resultMap="reportRow" timeout="5">
+    SELECT TOP(101) REPORTID, REPORTNAME, REPORTCLASSID
+    FROM dbo.RPS_REPORT WHERE SITEID=#{sourceSiteId,jdbcType=VARCHAR} ORDER BY REPORTID
+  </select>
+  <select id="reportInfo" resultMap="reportRow" timeout="5">
+    SELECT REPORTID, REPORTNAME, REPORTCLASSID FROM dbo.RPS_REPORT
+    WHERE SITEID=#{sourceSiteId,jdbcType=VARCHAR} AND REPORTID=#{reportId,jdbcType=VARCHAR}
+  </select>
+</mapper>

@@ -1,4 +1,4 @@
-param([ValidateSet('Maven','Gradle')][string]$BuildTool='Maven', [string]$Name='TPS-0.1.0-preview-windows-x64')
+param([ValidateSet('Maven','Gradle')][string]$BuildTool='Maven', [string]$Name='TPS-0.1.0-report-preview-windows-x64')
 $ErrorActionPreference='Stop'
 $repo=Split-Path -Parent $PSScriptRoot
 if($Name -notmatch '^[A-Za-z0-9._-]+$'){throw 'Use a plain package name.'}
@@ -10,6 +10,8 @@ if(Test-Path -LiteralPath $out){throw 'Package directory exists; preserve it or 
 New-Item -ItemType Directory -Path $out -Force | Out-Null
 Copy-Item -LiteralPath $jar -Destination (Join-Path $out 'tps-server.jar')
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'run-local.ps1') -Destination $out
+Copy-Item -LiteralPath (Join-Path $repo 'THIRD-PARTY-NOTICES.md') -Destination $out
+Copy-Item -LiteralPath (Join-Path $repo 'server\src\main\resources\META-INF\licenses') -Destination (Join-Path $out 'licenses') -Recurse
 & (Join-Path $env:JAVA_HOME 'bin\jlink.exe') --add-modules java.se,jdk.crypto.ec,jdk.unsupported,jdk.localedata --include-locales ko,en --strip-debug --no-header-files --no-man-pages --compress=2 --output (Join-Path $out 'runtime')
 if($LASTEXITCODE -ne 0){throw 'Java runtime packaging failed'}
 $guide=@'
@@ -21,8 +23,11 @@ Supply DB credentials and a 12+ character browser password at masked prompts.
 Open http://127.0.0.1:18760; use that browser password.
 Java is included. Eclipse, Maven, Gradle and Node.js are not required to run.
 SQL Server TPS/dbo must already contain the reviewed A7 schema. No automatic DDL.
-This preview supports template save/reopen only; production login, printing,
-Excel import and final installation/update workflows are not yet delivered.
+This preview supports template save/reopen, one-row report field binding and QR data preview.
+The fixed report-list example reads copied RPS_REPORT metadata in local TPS only.
+TPS_RPS_REFERENCE_SITE_ID optionally maps this process to one copied source site.
+Production login, PDF/pagination, printing, Excel import and final installation/update
+workflows are not yet delivered. See THIRD-PARTY-NOTICES.md and licenses/.
 The default TLS setting verifies the server certificate.
 '@
 [IO.File]::WriteAllText((Join-Path $out 'README.txt'),$guide,[Text.UTF8Encoding]::new($false))

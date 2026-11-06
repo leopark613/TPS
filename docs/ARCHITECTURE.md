@@ -1,4 +1,38 @@
-# TPS 저장·재열기 구현 구조
+# TPS 저장·재열기 및 일반 보고서 데이터 미리보기 구조
+
+## TPS-IMPL-002 추가 구조
+
+2026-11-06. 다음 구조를 구현했으며 검증 결과는 VERIFICATION.md 및 각 구현 단위의 증거를 구분해서 본다.
+
+```text
+React (frontend/src)
+  App / Canvas                양식 편집·저장·이력
+  ReportPanel / report         RPS 데이터 연결·선택행·저장본 미리보기
+  api                         같은 WAS의 JSON API 호출
+              |
+Spring Boot (server/src/main/java/com/thira/tps)
+  document                    공통 문서·불변 버전·동시 저장 보호
+  rps/viewer
+    ReportViewerController    신규 HTTP 경계: ReportList / Preview
+    GeneralViewerService      기존 RPS 서비스명 계승: bindDataSource / preview
+    ReportQuery               MyBatis 고정 보고서 메타데이터 조회
+    QrEncoder                 ZXing QR 생성 어댑터
+  config                      인증·현재 site·RPS/LPS 활성화·명시 원본 site 매핑
+              |
+SQL Server TPS.dbo
+  TPS_DOC_*                   정의와 바인딩만 저장, 조회 결과는 저장하지 않음
+  RPS_REPORT                  복제된 기존 보고서 목록의 3개 필드만 읽음
+```
+
+`document`가 모든 API를 담는다는 뜻은 아니다. RPS 조회·미리보기는 `rps.viewer`로 분리했다. LPS 발행·채번은 실제 원본 업무 이름을 확인한 `lps` 패키지에 후속 구현한다. 현재 LPS 채번 패키지가 구현됐다는 뜻은 아니다. 명칭 근거와 변경 이유는 LEGACY-NAME-MAPPING.md에 기록한다.
+
+이번 일반 보고서 기능은 한 데이터 행을 텍스트·QR에 연결하고, 정확한 저장 버전을 다시 읽어 서버에서 값을 해석한다. React는 서버 결과를 그린다. 미저장 내용은 자동 저장하지 않으며 편집·행·버전이 바뀌면 이전 미리보기를 지운다. QR은 UTF-8/M/자동 버전/4모듈 여백이라는 TPS 기본 계약이며 기존 DevExpress 기본값과 같다고 주장하지 않는다.
+
+예제 쿼리는 고정 MyBatis `ReportList / TPS_LOCAL_SAMPLE / 1`이다. 기존 STOREDQUERY나 MES 업무 SQL은 실행하지 않는다. 원본 site는 현재 site가 기본이며 `TPS_RPS_REFERENCE_SITE_ID`를 명시한 프로세스에만 복제된 다른 site 하나의 메타데이터를 허용한다. API가 site·SQL·JDBC 주소를 결정할 수 없다. 새 DB 테이블은 필요 없다.
+
+편집·저장은 알 수 없는 기존 속성을 보존한다. 미리보기는 표현할 수 없는 속성을 오류로 알리므로 일부 요소가 빠진 성공 결과를 내지 않는다. `extensions`는 실행하지 않는 메타데이터다. 실제 PDF, 페이지 반복·분할, 프린터 송신, LPS 번호 발급, 원본 DevExpress 출력과의 동등성은 이 단위의 완료 범위 밖이다.
+
+## TPS-IMPL-001 기반 구조 (이력)
 
 2026-11-06, TPS-IMPL-001. 이 문서는 구현된 범위와 후속 범위를 구분한다.
 
